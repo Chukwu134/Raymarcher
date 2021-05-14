@@ -21,10 +21,10 @@
 
 using namespace std;
 
-class RastApp : public nanogui::Screen
+class FractalApp : public nanogui::Screen
 {
 public:
-  RastApp(string fileName);
+  FractalApp();
 
   virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) override;
   virtual bool mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers) override;
@@ -34,18 +34,18 @@ public:
   virtual void drawContents() override;
 
 private:
-  void traverseDrawForward(shared_ptr<Node> node, Eigen::Affine3f acc);
-  void findLightsForward(shared_ptr<Node> node, Eigen::Affine3f acc);
-  void calculateBoneTransforms(shared_ptr<Node> node, Eigen::Affine3f acc, shared_ptr<MeshInfo> meshI, float t);
+  // void traverseDrawForward(shared_ptr<Node> node, Eigen::Affine3f acc);
+  // void findLightsForward(shared_ptr<Node> node, Eigen::Affine3f acc);
+  // void calculateBoneTransforms(shared_ptr<Node> node, Eigen::Affine3f acc, shared_ptr<MeshInfo> meshI, float t);
 
   static const int windowWidth;
   static const int windowHeight;
 
-  Eigen::Matrix4f boneTransforms[50];
+  //Eigen::Matrix4f boneTransforms[50];
 
-  std::unique_ptr<GLWrap::Program> forwardShader;
+  std::unique_ptr<GLWrap::Program> fractalShader;
 
-  std::shared_ptr<Scene> scene;
+  //std::shared_ptr<Scene> scene;
 
   std::shared_ptr<RTUtil::PerspectiveCamera> cam;
   std::unique_ptr<RTUtil::DefaultCC> cc;

@@ -421,10 +421,10 @@ void Generator::initializeCamera(shared_ptr<Scene> scene, const aiScene *data)
   }
 }
 
-shared_ptr<Scene> Generator::generateScene(const string &filename)
+shared_ptr<Scene> Generator::generateScene()
 {
-  string base = filename.substr(0, filename.find('.'));
-  cout << base << '\n';
+  // string base = filename.substr(0, filename.find('.'));
+  // cout << base << '\n';
 
   // create pointer to scene
   shared_ptr<Scene> scene = make_shared<Scene>();
@@ -432,51 +432,51 @@ shared_ptr<Scene> Generator::generateScene(const string &filename)
 
   // fill in info
   RTUtil::SceneInfo info;
-  std::cout << RTUtil::readSceneInfo(resourcePath + base + infoFile, info);
-  scene->info = info;
+  //std::cout << RTUtil::readSceneInfo(resourcePath + base + infoFile, info);
+  //scene->info = info;
 
   // NEED TO ADD MATERIAL STUFF HERE
-  scene->default_mat = info.defaultMaterial;
+  //scene->default_mat = info.defaultMaterial;
 
   // Import the scene files
-  Assimp::Importer importer;
-  importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, aiComponent_NORMALS);
-  const aiScene *data = importer.ReadFile(
-      resourcePath + filename,
-      aiProcess_RemoveComponent |
-          aiProcess_GenNormals |
-          aiProcess_LimitBoneWeights |
-          aiProcess_Triangulate |
-          aiProcess_SortByPType);
+  // Assimp::Importer importer;
+  // importer.SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, aiComponent_NORMALS);
+  // const aiScene *data = importer.ReadFile(
+  //     resourcePath + filename,
+  //     aiProcess_RemoveComponent |
+  //         aiProcess_GenNormals |
+  //         aiProcess_LimitBoneWeights |
+  //         aiProcess_Triangulate |
+  //         aiProcess_SortByPType);
 
-  if (!data)
-  {
-    printf("Scene failed in import!\n");
-  }
-  else
-  {
-    printf("Scene imported successfully\n");
-  }
+  // if (!data)
+  // {
+  //   printf("Scene failed in import!\n");
+  // }
+  // else
+  // {
+  //   printf("Scene imported successfully\n");
+  // }
 
   //INITIALIZE CAMERA
   //INITIALIZE SCENE
-  initializeScene(scene, data);
-  initializeCamera(scene, data);
-  initializeAnimation(scene, data);
+  // initializeScene(scene, data);
+  // initializeCamera(scene, data);
+  // initializeAnimation(scene, data);
 
   // Add ambient lights
-  for (int i = 0; i < scene->info.lights.size(); i++)
-  {
-    std::shared_ptr<RTUtil::LightInfo> l = scene->info.lights[i];
+  // for (int i = 0; i < scene->info.lights.size(); i++)
+  // {
+  //   std::shared_ptr<RTUtil::LightInfo> l = scene->info.lights[i];
 
-    if (l->type == RTUtil::Ambient)
-    {
-      scene->root->lightInfos.push_back(l);
-      scene->bgColor = l->radiance;
-      std::cout << "Added an ambient light \n";
-    }
-  }
+  //   if (l->type == RTUtil::Ambient)
+  //   {
+  //     scene->root->lightInfos.push_back(l);
+  //     scene->bgColor = l->radiance;
+  //     std::cout << "Added an ambient light \n";
+  //   }
+  // }
 
-  importer.FreeScene();
+  // importer.FreeScene();
   return scene;
 }

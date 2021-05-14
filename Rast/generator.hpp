@@ -84,5 +84,5 @@ class Generator
   static void initializeCamera(shared_ptr<Scene> scene, const aiScene *data);
 
 public:
-  static shared_ptr<Scene> generateScene(const string &filename);
+  static shared_ptr<Scene> generateScene();
 };
