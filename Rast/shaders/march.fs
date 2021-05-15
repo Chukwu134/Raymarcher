@@ -11,29 +11,10 @@ out vec4 fragColor;
 
 const float PI = 3.14159265358979323846264;
 
-const float threshold = 0.00001;
+const float threshold = 0.001;
 
 vec4 worldPos = vec4(1);
 vec4 worldDir = vec4(0);
-float gStep = 0.001;
-vec3 gradient = vec3(0);
-
-float potential(vec3 pos) {
-  vec3 z = pos;
-  int Power = 8;
-  for(int i = 1; i < 50; i++) {
-    return log(length(z)) / pow(Power, float(i));
-  }
-  return 0.0;
-}
-
-float fastMandlebulbDE(vec3 p) {
-  float pot = potential(p);
-  if(pot == 0.0)
-    return 0.0;
-  gradient = (vec3(potential(p + worldDir.x * gStep), potential(p + worldDir.y * gStep), potential(p + worldDir.z * gStep)) - pot) / gStep;
-  return (0.5 / exp(pot)) * sinh(pot) / length(gradient);
-}
 
 // mandlebulb
 float distanceEstimatorMandlebulb(vec4 pos) {
@@ -100,7 +81,7 @@ void main() {
   float minDistance = 100000;
 
   while(travelled < 50 && distance > threshold) {
-    distance = fastMandlebulbDE(worldPos.xyz);
+    distance = distanceEstimatorMandlebulb(worldPos);
     travelled += distance;
     worldPos = worldPos + worldDir * distance;
     minDistance = min(minDistance, distance);
