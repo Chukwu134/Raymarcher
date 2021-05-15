@@ -31,13 +31,13 @@ FractalApp::FractalApp()
 
   // Create a camera in a default position, respecting the aspect ratio of the window.
   cam = shared_ptr<RTUtil::PerspectiveCamera>(new RTUtil::PerspectiveCamera(
-      Eigen::Vector3f(0, 0, -3), // eye
+      Eigen::Vector3f(0, 0, -5), // eye
       Eigen::Vector3f(0, 0, 0),
       Eigen::Vector3f(0, 1, 0), // up
       16.0 / 9.0,               // aspect
       1,
       50, // near, far
-      3   // fov
+      1   // fov
       ));
 
   cc.reset(new RTUtil::DefaultCC(cam));
