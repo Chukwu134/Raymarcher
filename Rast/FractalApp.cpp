@@ -127,8 +127,24 @@ void FractalApp::drawContents()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
 
+  currentTime = glfwGetTime();
+  t = fmod(currentTime, 1);
+  float theta = currentTime / 10;
+
+  fractalShader->uniform("theta", theta);
+  Eigen::AngleAxisf turn(theta, Eigen::Vector3f(0, 0, 1));
+
+  // Eigen::Vector3f tar = cam->getTarget();
+  // Eigen::Affine3f T = Eigen::Affine3f::Identity();
+  // T *= Eigen::Translation3f(tar);
+  // T *= turn;
+  // T *= Eigen::Translation3f(-tar);
+  // cam->setEye(T * cam->getEye());
+
   fractalShader->use();
-  cout << cam->getProjectionMatrix().inverse().matrix();
+  // cout << (Eigen::Affine3f::Identity() * turn).matrix();
+  // cout << cam->getViewMatrix().inverse().matrix();
+  fractalShader->uniform("turnMat", (Eigen::Affine3f::Identity() * turn).matrix());
   fractalShader->uniform("mPi", cam->getProjectionMatrix().inverse().matrix());
   fractalShader->uniform("mVi", cam->getViewMatrix().inverse().matrix());
   fsqMesh->drawArrays(GL_TRIANGLE_FAN, 0, 4);
