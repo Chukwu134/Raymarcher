@@ -103,10 +103,12 @@ void main() {
 
   // vec3 planeDir = (turnMat * vec4(vec3(1, 0, 0), 1)).xyz;
   vec3 planeDir = (turnMat * vec4(pdir1, 1)).xyz;
-  vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - bias);
+  // vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - bias);
+  vec4 planeDirBias = vec4(planeDir, 0);
 
   vec3 planeDir1 = (turnMat * vec4(pdir2, 1)).xyz;
-  vec4 planeDirBias1 = vec4(planeDir1, sin(theta) / 5 - bias);
+  // vec4 planeDirBias1 = vec4(planeDir1, sin(theta) / 5 - bias);
+  vec4 planeDirBias1 = vec4(planeDir1, 0);
 
   while(travelled < 50 && distance > threshold) {
 
