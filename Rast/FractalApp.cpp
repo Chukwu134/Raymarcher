@@ -136,7 +136,7 @@ void FractalApp::drawContents()
   float theta = currentTime / 10;
 
   fractalShader->uniform("theta", theta);
-  Eigen::AngleAxisf turn(theta, Eigen::Vector3f(0, 0, 1));
+  Eigen::AngleAxisf turn(theta, Eigen::Vector3f(1, 0, 0));
 
   // Eigen::Vector3f tar = cam->getTarget();
   // Eigen::Affine3f T = Eigen::Affine3f::Identity();
@@ -151,9 +151,15 @@ void FractalApp::drawContents()
   fractalShader->uniform("turnMat", (Eigen::Affine3f::Identity() * turn).matrix());
   fractalShader->uniform("mPi", cam->getProjectionMatrix().inverse().matrix());
   fractalShader->uniform("mVi", cam->getViewMatrix().inverse().matrix());
-  fractalShader->uniform("ang1", this->angles[0]);
-  fractalShader->uniform("ang2", this->angles[1]);
-  fractalShader->uniform("bias", this->bias);
+
+  for (int i = 0; i < 2; i++)
+  {
+    fractalShader->uniform("angles[" + to_string(i) + "]", angles[i]);
+    fractalShader->uniform("bias[" + to_string(i) + "]", bias[i]);
+  }
+  // fractalShader->uniform("ang1", this->angles[]);
+  // fractalShader->uniform("ang2", this->angles[1]);
+  // fractalShader->uniform("bias", this->bias);
   fsqMesh->drawArrays(GL_TRIANGLE_FAN, 0, 4);
   fractalShader->unuse();
 }
@@ -183,6 +189,18 @@ void FractalApp::buildGUI()
   ang1Slider->setCallback([this](float value)
                           { changeAngle(0, value); });
 
+  // Create a slider that adjusts the turbidity
+  nanogui::Widget *bias1Widget = new nanogui::Widget(controlPanel);
+  bias1Widget->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+                                                nanogui::Alignment::Middle,
+                                                0, 5));
+  new nanogui::Label(bias1Widget, "Bias 1:");
+  nanogui::Slider *bias1Slider = new nanogui::Slider(bias1Widget);
+  bias1Slider->setRange(std::make_pair(0.0f, 2.0f));
+  bias1Slider->setValue(0.0f);
+  bias1Slider->setCallback([this](float value)
+                           { changeBias(0, value); });
+
   // Create a slider widget that adjusts the sun angle parameter
   nanogui::Widget *ang2Widget = new nanogui::Widget(controlPanel);
   ang2Widget->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
@@ -196,16 +214,16 @@ void FractalApp::buildGUI()
                           { changeAngle(1, value); });
 
   // Create a slider that adjusts the turbidity
-  nanogui::Widget *biasWidget = new nanogui::Widget(controlPanel);
-  biasWidget->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
-                                               nanogui::Alignment::Middle,
-                                               0, 5));
-  new nanogui::Label(biasWidget, "Bias:");
-  nanogui::Slider *biasSlider = new nanogui::Slider(biasWidget);
-  biasSlider->setRange(std::make_pair(0.0f, 1.0f));
-  biasSlider->setValue(0.0f);
-  biasSlider->setCallback([this](float value)
-                          { changeBias(value); });
+  nanogui::Widget *bias2Widget = new nanogui::Widget(controlPanel);
+  bias2Widget->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+                                                nanogui::Alignment::Middle,
+                                                0, 5));
+  new nanogui::Label(bias2Widget, "Bias 2:");
+  nanogui::Slider *bias2Slider = new nanogui::Slider(bias2Widget);
+  bias2Slider->setRange(std::make_pair(0.0f, 2.0f));
+  bias2Slider->setValue(0.0f);
+  bias2Slider->setCallback([this](float value)
+                           { changeBias(1, value); });
 }
 
 void FractalApp::changeAngle(int i, float ang)
@@ -213,7 +231,7 @@ void FractalApp::changeAngle(int i, float ang)
   this->angles[i] = ang;
 }
 
-void FractalApp::changeBias(float b)
+void FractalApp::changeBias(int i, float b)
 {
-  this->bias = b;
+  this->bias[i] = b;
 }

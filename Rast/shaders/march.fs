@@ -4,9 +4,12 @@ uniform mat4 mPi;  // projection matrix inverse
 uniform mat4 mVi;
 uniform mat4 turnMat;
 
-uniform float ang1;
-uniform float ang2;
-uniform float bias;
+// uniform float ang1;
+// uniform float ang2;
+// uniform float bias;
+
+uniform float angles[2];
+uniform float bias[2];
 
 uniform float theta;
 
@@ -98,23 +101,29 @@ void main() {
   float minDistance = 100000;
 
   vec4 testingPos = worldPos;
-  vec3 pdir1 = normalize(vec3(sin(ang1 * PI / 180), cos(ang1 * PI / 180), 0));
-  vec3 pdir2 = normalize(vec3(sin(ang2 * PI / 180), cos(ang2 * PI / 180), 0));
+  vec3 pdir1 = normalize(vec3(sin(angles[0] * PI / 180), cos(angles[0] * PI / 180), 0));
+  vec3 pdir2 = normalize(vec3(sin(angles[1] * PI / 180), cos(angles[1] * PI / 180), 0));
 
   // vec3 planeDir = (turnMat * vec4(vec3(1, 0, 0), 1)).xyz;
   vec3 planeDir = (turnMat * vec4(pdir1, 1)).xyz;
-  // vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - bias);
-  vec4 planeDirBias = vec4(planeDir, 0);
+  vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - bias[0]);
+  // vec4 planeDirBias = vec4(planeDir, 0);
 
   vec3 planeDir1 = (turnMat * vec4(pdir2, 1)).xyz;
-  // vec4 planeDirBias1 = vec4(planeDir1, sin(theta) / 5 - bias);
-  vec4 planeDirBias1 = vec4(planeDir1, 0);
+  vec4 planeDirBias1 = vec4(planeDir1, sin(theta) / 5 - bias[1]);
+  // vec4 planeDirBias1 = vec4(planeDir1, 0);
+
+  vec4 planeDirBias2 = vec4(vec3(0, 0, 1), -sin(theta) / 5 - 0.5);
+
+  vec4 planeDirBias3 = vec4(-normalize(vec3(1, 0, 1)), 0.5);
 
   while(travelled < 50 && distance > threshold) {
 
     vec4 turnedPos = turnMat * worldPos;
     testingPos = reflect(planeDirBias, turnedPos);
     testingPos = reflect(planeDirBias1, testingPos);
+    testingPos = reflect(planeDirBias2, testingPos);
+    testingPos = reflect(planeDirBias3, testingPos);
 
     // testingPos = mod(worldPos + 1.5, 3) - 1.5;
     // testingPos.y = mod(worldPos.y + 1.5, 3) - 1.5;
