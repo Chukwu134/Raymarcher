@@ -10,7 +10,6 @@ uniform mat4 turnMat;
 
 uniform float angles[2];
 uniform float bias[2];
-
 uniform float theta;
 
 //in vec3 vNormal;
@@ -22,12 +21,36 @@ out vec4 fragColor;
 const float PI = 3.14159265358979323846264;
 
 const float threshold = 0.005;
+vec3 pdir1 = normalize(vec3(sin(angles[0] * PI / 180), cos(angles[0] * PI / 180), 0));
+vec3 pdir2 = normalize(vec3(sin(angles[1] * PI / 180), cos(angles[1] * PI / 180), 0));
+vec3 planeDir = (turnMat * vec4(pdir1, 1)).xyz;
+vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - bias[0]);
+vec3 planeDir1 = (turnMat * vec4(pdir2, 1)).xyz;
+vec4 planeDirBias1 = vec4(planeDir1, sin(theta) / 5 - bias[1]);
+vec4 planeDirBias2 = vec4(vec3(0, 0, 1), -sin(theta) / 5 - 0.5);
+vec4 planeDirBias3 = vec4(-normalize(vec3(1, 0, 1)), 0.5);
 
 vec4 worldPos = vec4(1);
 vec4 worldDir = vec4(0);
 
+vec4 reflect(vec4 abcd, vec4 worldPt) {
+  float val = dot(worldPt, abcd);
+  vec4 testingPos = worldPt;
+  if(val < 0) {
+    testingPos -= 2 * val * vec4(abcd.xyz, 0);
+  }
+  return testingPos;
+}
+
 // mandlebulb
-float distanceEstimatorMandlebulb(vec4 pos) {
+float distanceEstimatorMandlebulb(inout vec4 testingPos, vec4 pos) {
+  testingPos = turnMat * pos;
+  testingPos = reflect(planeDirBias, testingPos);
+  testingPos = reflect(planeDirBias1, testingPos);
+  testingPos = reflect(planeDirBias2, testingPos);
+  testingPos = reflect(planeDirBias3, testingPos);
+  pos = testingPos;
+
   vec3 z = pos.xyz;
   float dr = 1.0;
   float r = 0.0;
@@ -76,15 +99,6 @@ float get_glow(float minDistance) {
   return 0.8 - 40 * minDistance;
 }
 
-vec4 reflect(vec4 abcd, vec4 worldPt) {
-  float val = dot(worldPt, abcd);
-  vec4 testingPos = worldPt;
-  if(val < 0) {
-    testingPos -= 2 * val * vec4(abcd.xyz, 0);
-  }
-  return testingPos;
-}
-
 void main() {
   vec4 NDC = vec4(geom_texCoord * 2 - 1, 0, 1);
   vec4 eyeSpace = mPi * NDC;
@@ -101,35 +115,10 @@ void main() {
   float minDistance = 100000;
 
   vec4 testingPos = worldPos;
-  vec3 pdir1 = normalize(vec3(sin(angles[0] * PI / 180), cos(angles[0] * PI / 180), 0));
-  vec3 pdir2 = normalize(vec3(sin(angles[1] * PI / 180), cos(angles[1] * PI / 180), 0));
-
-  // vec3 planeDir = (turnMat * vec4(vec3(1, 0, 0), 1)).xyz;
-  vec3 planeDir = (turnMat * vec4(pdir1, 1)).xyz;
-  vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - bias[0]);
-  // vec4 planeDirBias = vec4(planeDir, 0);
-
-  vec3 planeDir1 = (turnMat * vec4(pdir2, 1)).xyz;
-  vec4 planeDirBias1 = vec4(planeDir1, sin(theta) / 5 - bias[1]);
-  // vec4 planeDirBias1 = vec4(planeDir1, 0);
-
-  vec4 planeDirBias2 = vec4(vec3(0, 0, 1), -sin(theta) / 5 - 0.5);
-
-  vec4 planeDirBias3 = vec4(-normalize(vec3(1, 0, 1)), 0.5);
 
   while(travelled < 50 && distance > threshold) {
 
-    vec4 turnedPos = turnMat * worldPos;
-    testingPos = reflect(planeDirBias, turnedPos);
-    testingPos = reflect(planeDirBias1, testingPos);
-    testingPos = reflect(planeDirBias2, testingPos);
-    testingPos = reflect(planeDirBias3, testingPos);
-
-    // testingPos = mod(worldPos + 1.5, 3) - 1.5;
-    // testingPos.y = mod(worldPos.y + 1.5, 3) - 1.5;
-    // testingPos.z = mod(worldPos.z + 1.5, 3) - 1.5;
-
-    distance = distanceEstimatorMandlebulb(testingPos);
+    distance = distanceEstimatorMandlebulb(testingPos, worldPos);
     travelled += distance;
     worldPos = worldPos + worldDir * distance;
     minDistance = min(minDistance, distance);
