@@ -3,6 +3,7 @@
 uniform mat4 mPi;  // projection matrix inverse
 uniform mat4 mVi;
 uniform mat4 turnMat;
+uniform int toggle;
 
 // uniform float ang1;
 // uniform float ang2;
@@ -42,6 +43,19 @@ vec4 reflect(vec4 abcd, vec4 worldPt) {
   return testingPos;
 }
 
+float sdBox(vec3 pt, vec3 b) {
+  vec3 box = abs(pt) - b;
+  return length(max(box, 0.0)) + min(max(box.x, max(box.y, box.z)), 0.0);
+}
+
+mat4 rotationX(in float angle) {
+  return mat4(1.0, 0, 0, 0, 0, cos(angle), -sin(angle), 0, 0, sin(angle), cos(angle), 0, 0, 0, 0, 1);
+}
+
+mat4 rotationY(in float angle) {
+  return mat4(1.0, 0, 0, 0, 0, cos(angle), -sin(angle), 0, 0, sin(angle), cos(angle), 0, 0, 0, 0, 1);
+}
+
 // mandlebulb
 float distanceEstimatorMandlebulb(inout vec4 testingPos, vec4 pos) {
   testingPos = turnMat * pos;
@@ -76,6 +90,47 @@ float distanceEstimatorMandlebulb(inout vec4 testingPos, vec4 pos) {
     z += pos.xyz;
   }
   return 0.5 * log(r) * r / dr;
+}
+
+float mengerDE(inout vec4 testingPos, vec4 pos) {
+  testingPos = turnMat * pos;
+  testingPos = reflect(planeDirBias, testingPos);
+  testingPos = reflect(planeDirBias1, testingPos);
+  testingPos = reflect(planeDirBias2, testingPos);
+  testingPos = reflect(planeDirBias3, testingPos);
+  pos = testingPos;
+
+  float scale = 1.0;
+  float offset = 0.;
+  float iterations = 3.;
+
+  vec3 pt = pos.xyz;
+
+  float dist = sdBox(vec3(pt.x, pt.y + offset, pt.z), vec3(scale));
+
+  float s = 2;
+
+  float da, db, dc;
+
+  for(int i = 0; i < 4; i++) {
+    vec3 a = mod(pt * s, 2.0) - 1.0;
+    s *= iterations;
+    vec3 r = abs(1.0 - 3.0 * abs(a));
+
+    r = (vec4(r, 1.0) * rotationX(20.)).xyz;
+    da = max(r.x + 1.5, r.y);
+    r = (vec4(r, 1.0) * rotationY(80.)).xyz;
+
+    da = max(da + r.x - 0.5, r.y);
+    db = max(r.y, r.z);
+    dc = max(r.z + 0.5, r.x);
+
+    float c = (min(da, min(db, dc)) - 1.) / s;
+    if(c > dist)
+      dist = c;
+  }
+
+  return dist;
 }
 
 //sphere
@@ -118,23 +173,33 @@ void main() {
 
   while(travelled < 50 && distance > threshold) {
 
-    distance = distanceEstimatorMandlebulb(testingPos, worldPos);
+    //distance = distanceEstimatorMandlebulb(testingPos, worldPos);
+
+    distance = toggle == 0 ? distanceEstimatorMandlebulb(testingPos, worldPos) : mengerDE(testingPos, worldPos);
     travelled += distance;
     worldPos = worldPos + worldDir * distance;
     minDistance = min(minDistance, distance);
     steps += 1;
   }
+  //testingPos = worldPos;
 
   if(travelled < 50) {
-    vec3 color = vec3(length(testingPos.xyz) / 2, 0.2, .5);
-    fragColor = vec4(color - steps / 200, 1);
+    vec3 color = vec3(1, 1, 1);
+    if(toggle == 0) {
+      color = vec3(length(testingPos.xyz) / 2, 0.2, .5);
+
+    } else {
+      color = vec3(.6, length(testingPos.xyz) / 2, .8);
+    }
+    fragColor = vec4(color - steps / 100, 1);
+
     //fragColor = vec4(color, 1);
 
   } else {
     float glow = get_glow(minDistance);
     vec3 glow_hue = vec3(0.9, 1, 0.7);
 
-    //fragColor = vec4(glow_hue * glow, 0);
+    fragColor = vec4(glow_hue * glow, 0);
     fragColor = vec4(0, 0, 0, 1);
   }
 }

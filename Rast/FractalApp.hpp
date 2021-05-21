@@ -69,6 +69,8 @@ private:
   void changeAngle(int i, float a);
   void changeBias(int i, float b);
 
+  int toggle = 0;
+
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

@@ -84,8 +84,15 @@ bool FractalApp::keyboardEvent(int key, int scancode, int action, int modifiers)
     case GLFW_KEY_ESCAPE:
       setVisible(false);
       return true;
-    case GLFW_KEY_R:
-      t = 0;
+    case GLFW_KEY_1:
+      if (toggle == 0)
+      {
+        toggle = 1;
+      }
+      else
+      {
+        toggle = 0;
+      }
       return true;
     case GLFW_KEY_W:
       cam->setEye(cam->getEye() + gaze);
@@ -203,6 +210,7 @@ void FractalApp::drawContents()
   fractalShader->uniform("turnMat", (Eigen::Affine3f::Identity() * turn).matrix());
   fractalShader->uniform("mPi", cam->getProjectionMatrix().inverse().matrix());
   fractalShader->uniform("mVi", cam->getViewMatrix().inverse().matrix());
+  fractalShader->uniform("toggle", toggle);
 
   for (int i = 0; i < 2; i++)
   {
