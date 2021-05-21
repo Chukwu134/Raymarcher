@@ -4,7 +4,10 @@ uniform mat4 mPi;  // projection matrix inverse
 uniform mat4 mVi;
 uniform mat4 turnMat;
 
-//uniform float bias;
+uniform float ang1;
+uniform float ang2;
+uniform float bias;
+
 uniform float theta;
 
 //in vec3 vNormal;
@@ -15,7 +18,7 @@ out vec4 fragColor;
 
 const float PI = 3.14159265358979323846264;
 
-const float threshold = 0.0005;
+const float threshold = 0.005;
 
 vec4 worldPos = vec4(1);
 vec4 worldDir = vec4(0);
@@ -95,14 +98,23 @@ void main() {
   float minDistance = 100000;
 
   vec4 testingPos = worldPos;
-  vec3 planeDir = (turnMat * vec4(vec3(1, 0, 0), 1)).xyz;
-  vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - 0.0);
+  vec3 pdir1 = normalize(vec3(sin(ang1 * PI / 180), cos(ang1 * PI / 180), 0));
+  vec3 pdir2 = normalize(vec3(sin(ang2 * PI / 180), cos(ang2 * PI / 180), 0));
+
+  // vec3 planeDir = (turnMat * vec4(vec3(1, 0, 0), 1)).xyz;
+  vec3 planeDir = (turnMat * vec4(pdir1, 1)).xyz;
+  vec4 planeDirBias = vec4(planeDir, sin(theta) / 5 - bias);
+
+  vec3 planeDir1 = (turnMat * vec4(pdir2, 1)).xyz;
+  vec4 planeDirBias1 = vec4(planeDir1, sin(theta) / 5 - bias);
+
   while(travelled < 50 && distance > threshold) {
 
     vec4 turnedPos = turnMat * worldPos;
     testingPos = reflect(planeDirBias, turnedPos);
+    testingPos = reflect(planeDirBias1, testingPos);
 
-    //testingPos = mod(worldPos + 1.5, 3) - 1.5;
+    // testingPos = mod(worldPos + 1.5, 3) - 1.5;
     // testingPos.y = mod(worldPos.y + 1.5, 3) - 1.5;
     // testingPos.z = mod(worldPos.z + 1.5, 3) - 1.5;
 

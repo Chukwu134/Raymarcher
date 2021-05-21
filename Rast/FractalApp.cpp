@@ -2,6 +2,8 @@
 #include <nanogui/window.h>
 #include <nanogui/glcanvas.h>
 #include <nanogui/layout.h>
+#include <nanogui/slider.h>
+#include <nanogui/label.h>
 
 #include <cpplocate/cpplocate.h>
 
@@ -62,6 +64,8 @@ FractalApp::FractalApp()
   glfwGetFramebufferSize(glfwWindow(), &framebufferSize.x(), &framebufferSize.y());
   glViewport(0, 0, framebufferSize.x(), framebufferSize.y());
 
+  // p1angle = 90;
+  buildGUI();
   performLayout();
   setVisible(true);
 }
@@ -147,6 +151,69 @@ void FractalApp::drawContents()
   fractalShader->uniform("turnMat", (Eigen::Affine3f::Identity() * turn).matrix());
   fractalShader->uniform("mPi", cam->getProjectionMatrix().inverse().matrix());
   fractalShader->uniform("mVi", cam->getViewMatrix().inverse().matrix());
+  fractalShader->uniform("ang1", this->angles[0]);
+  fractalShader->uniform("ang2", this->angles[1]);
+  fractalShader->uniform("bias", this->bias);
   fsqMesh->drawArrays(GL_TRIANGLE_FAN, 0, 4);
   fractalShader->unuse();
+}
+
+void FractalApp::buildGUI()
+{
+
+  // Creates a window that has this screen as the parent.
+  // NB: even though this is a raw pointer, nanogui manages this resource internally.
+  // Do not delete it!
+  controlPanel = new nanogui::Window(this, "Control Panel");
+  controlPanel->setFixedWidth(220);
+  controlPanel->setPosition(Eigen::Vector2i(15, 15));
+  controlPanel->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Vertical,
+                                                 nanogui::Alignment::Middle,
+                                                 5, 5));
+
+  // Create a slider widget that adjusts the sun angle parameter
+  nanogui::Widget *ang1Widget = new nanogui::Widget(controlPanel);
+  ang1Widget->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+                                               nanogui::Alignment::Middle,
+                                               0, 5));
+  new nanogui::Label(ang1Widget, "Plane 1 Theta:");
+  nanogui::Slider *ang1Slider = new nanogui::Slider(ang1Widget);
+  ang1Slider->setRange(std::make_pair(0.0f, 360.0f));
+  ang1Slider->setValue(this->angles[0]);
+  ang1Slider->setCallback([this](float value)
+                          { changeAngle(0, value); });
+
+  // Create a slider widget that adjusts the sun angle parameter
+  nanogui::Widget *ang2Widget = new nanogui::Widget(controlPanel);
+  ang2Widget->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+                                               nanogui::Alignment::Middle,
+                                               0, 5));
+  new nanogui::Label(ang2Widget, "Plane 2 Theta:");
+  nanogui::Slider *ang2Slider = new nanogui::Slider(ang2Widget);
+  ang2Slider->setRange(std::make_pair(0.0f, 360.0f));
+  ang2Slider->setValue(this->angles[1]);
+  ang2Slider->setCallback([this](float value)
+                          { changeAngle(1, value); });
+
+  // Create a slider that adjusts the turbidity
+  nanogui::Widget *biasWidget = new nanogui::Widget(controlPanel);
+  biasWidget->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Horizontal,
+                                               nanogui::Alignment::Middle,
+                                               0, 5));
+  new nanogui::Label(biasWidget, "Bias:");
+  nanogui::Slider *biasSlider = new nanogui::Slider(biasWidget);
+  biasSlider->setRange(std::make_pair(0.0f, 1.0f));
+  biasSlider->setValue(0.0f);
+  biasSlider->setCallback([this](float value)
+                          { changeBias(value); });
+}
+
+void FractalApp::changeAngle(int i, float ang)
+{
+  this->angles[i] = ang;
+}
+
+void FractalApp::changeBias(float b)
+{
+  this->bias = b;
 }

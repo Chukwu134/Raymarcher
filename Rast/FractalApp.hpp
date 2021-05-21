@@ -60,6 +60,15 @@ private:
   float t = 0;            // animation time
   bool rewind = false;
 
+  // float p1angle = 90;
+  float angles[2] = {90, 180};
+  float bias = 0;
+
+  nanogui::Window *controlPanel = nullptr;
+  void buildGUI();
+  void changeAngle(int i, float a);
+  void changeBias(float b);
+
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
