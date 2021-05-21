@@ -77,6 +77,8 @@ bool FractalApp::keyboardEvent(int key, int scancode, int action, int modifiers)
 
   if (action == GLFW_PRESS)
   {
+    Eigen::Vector3f gaze = 0.1 * (cam->getTarget() - cam->getEye()).normalized();
+    Eigen::Vector3f right = 0.1 * cam->getRight();
     switch (key)
     {
     case GLFW_KEY_ESCAPE:
@@ -85,14 +87,47 @@ bool FractalApp::keyboardEvent(int key, int scancode, int action, int modifiers)
     case GLFW_KEY_R:
       t = 0;
       return true;
-    case GLFW_KEY_P:
-      speed = 0;
+    case GLFW_KEY_W:
+      cam->setEye(cam->getEye() + gaze);
+      cam->setTarget(cam->getTarget() + gaze);
       return true;
-    case GLFW_KEY_LEFT:
-      speed += 250;
+    case GLFW_KEY_S:
+      cam->setEye(cam->getEye() - gaze);
+      cam->setTarget(cam->getTarget() - gaze);
       return true;
-    case GLFW_KEY_RIGHT:
-      speed -= 250;
+    case GLFW_KEY_D:
+      cam->setEye(cam->getEye() + right);
+      cam->setTarget(cam->getTarget() + right);
+      return true;
+    case GLFW_KEY_A:
+      cam->setEye(cam->getEye() - right);
+      cam->setTarget(cam->getTarget() - right);
+      return true;
+    default:
+      return true;
+    }
+  }
+  else if (action == GLFW_REPEAT)
+  {
+    Eigen::Vector3f gaze = 0.1 * (cam->getTarget() - cam->getEye()).normalized();
+    Eigen::Vector3f right = 0.1 * cam->getRight();
+    switch (key)
+    {
+    case GLFW_KEY_W:
+      cam->setEye(cam->getEye() + gaze);
+      cam->setTarget(cam->getTarget() + gaze);
+      return true;
+    case GLFW_KEY_S:
+      cam->setEye(cam->getEye() - gaze);
+      cam->setTarget(cam->getTarget() - gaze);
+      return true;
+    case GLFW_KEY_D:
+      cam->setEye(cam->getEye() + right);
+      cam->setTarget(cam->getTarget() + right);
+      return true;
+    case GLFW_KEY_A:
+      cam->setEye(cam->getEye() - right);
+      cam->setTarget(cam->getTarget() - right);
       return true;
     default:
       return true;
@@ -109,8 +144,25 @@ bool FractalApp::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool dow
 
 bool FractalApp::mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector2i &rel, int button, int modifiers)
 {
-  return Screen::mouseMotionEvent(p, rel, button, modifiers) ||
-         cc->mouseMotionEvent(p, rel, button, modifiers);
+  // return Screen::mouseMotionEvent(p, rel, button, modifiers) ||
+  //        cc->mouseMotionEvent(p, rel, button, modifiers);
+
+  if (button == GLFW_MOUSE_BUTTON_2)
+  {
+    Eigen::Affine3f T = Eigen::Affine3f::Identity();
+    Eigen::AngleAxisf sideRot(rel.x() * .005, Eigen::Vector3f(0, 1, 0));
+    Eigen::AngleAxisf vertRot(rel.y() * .005, cam->getRight());
+    cout << sideRot.matrix() << "\n";
+
+    T *= Eigen::Translation3f(cam->getEye());
+    T *= vertRot;
+    T *= sideRot;
+    T *= Eigen::Translation3f(-cam->getEye());
+
+    cam->setTarget(T * cam->getTarget());
+  }
+
+  return Screen::mouseMotionEvent(p, rel, button, modifiers);
 }
 
 bool FractalApp::scrollEvent(const Eigen::Vector2i &p, const Eigen::Vector2f &rel)
